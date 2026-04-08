@@ -1,0 +1,33 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model Tarea {
+  id          Int       @id @default(autoincrement())
+  titulo      String    @db.NVarChar(255)
+  descripcion String    @db.NVarChar(Max)
+  referencia  String?   @db.NVarChar(100)
+  fecha       DateTime  @default(now())
+  horas       Float     @default(0.5)
+  tipoId      Int
+  tipo        TipoTarea @relation(fields: [tipoId], references: [id])
+  deletedAt   DateTime? // <--- Nuevo: Campo para borrado lógico
+}
+
+
+
+model TipoTarea {
+  id     Int     @id @default(autoincrement())
+  nombre String  @unique @db.NVarChar(50)
+  tareas Tarea[]
+}
+
+
+
