@@ -3,12 +3,39 @@
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import bcrypt from 'bcryptjs'
+import { cookies } from 'next/headers'
 
 /**
  * Función para limpiar strings y evitar errores de sintaxis en SQL Server 2008
  * Escapa comillas simples para prevenir inyecciones y fallos de ejecución.
  */
 const escapeSql = (str: string) => str.replace(/'/g, "''").trim();
+
+export async function iniciarSesion(formData: FormData) {
+  const correo = formData.get('correo') as string;
+  const password = formData.get('password') as string;
+
+  // Buscamos al usuario (Prisma maneja bien findUnique en SQL 2008)
+  const usuario = await prisma.usuario.findUnique({
+    where: { correo }
+  });
+
+  if (!usuario) {
+    throw new Error("Credenciales inválidas");
+  }
+
+  const passwordMatch = await bcrypt.compare(password, usuario.password);
+
+  if (!passwordMatch) {
+    throw new Error("Credenciales inválidas");
+  }
+
+  // Crear una sesión simple con cookies (o usar NextAuth)
+  (await cookies()).set('session_id', usuario.id.toString(), { httpOnly: true });
+
+  redirect('/');
+}
 
 export async function registrarTarea(formData: FormData) {
   try {

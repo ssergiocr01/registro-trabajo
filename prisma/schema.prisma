@@ -21,13 +21,18 @@ model Tarea {
   deletedAt   DateTime? // <--- Nuevo: Campo para borrado lógico
 }
 
-
-
 model TipoTarea {
   id     Int     @id @default(autoincrement())
   nombre String  @unique @db.NVarChar(50)
   tareas Tarea[]
 }
 
+model Usuario {
+  id       Int     @id @default(autoincrement())
+  nombre   String
+  correo   String  @unique
+  password String  // Aquí guardaremos el hash, nunca texto plano
+  rol      String  @default("user")
+}
 
 
